@@ -61,7 +61,7 @@ async def cmd_stop(message: types.Message):
         elif len(words) > 1:
             if words[1] in answers_m:
                 await parse_info(answers_m[words[1]])
-                await message.answer(f"Остановил опрос.")
+                await message.reply(f"Опрос завершён")
             else:
                 await message.answer(f"Опрос уже отправлен или его не существует.")
     else:
@@ -117,10 +117,12 @@ async def op_start(message):
                         answers_m[f"{z.quiz_id}"]["answered_users"] = []
                         if z.time is not False:     # Запись времени окнчания голосования, если таймер поставлен
                             answers_m[f"{z.quiz_id}"]["clock"] = datetime.now() + z.time
+                        else:
+                            answers_m[f"{z.quiz_id}"]["clock"] = False
                         answers_m[f"{z.quiz_id}"]["anonmis"] = z.anonims    # Запись об анонимности голосования
                         t = answers_m[f"{z.quiz_id}"]["clock"]  # Переменная для таймера
                         answers_m[f"{z.quiz_id}"]["user_info"] = {} # Создание списка ответов участников. Используется только в случае не анонимности
-                        await message.answer(f"Опрос {z.quiz_name}\nВопрос: {z.quiz_text}\nАнонимность: {z.anonims}\nТаймер: {t}\nНачали!", reply_markup=inline_kb)
+                        await message.answer(f"Опрос {z.quiz_name}\nВопрос: {z.quiz_text}\nАнонимность: {z.anonims}\nТаймер: до {t}\nНачали!", reply_markup=inline_kb)
                 break
 
 
@@ -128,9 +130,10 @@ async def op_start(message):
 async def process_callback_(callback_query: types.CallbackQuery):
     a = callback_query.data.split("_")
     if a[0] in answers_m:
-        if answers_m[a[0]]["clock"] <= datetime.now():  # Проверка времени
+        if (answers_m[a[0]]["clock"] != False) and answers_m[a[0]]["clock"] <= datetime.now():  # Проверка времени
             await parse_info(answers_m[a[0]])
-            await bot.answer_callback_query(callback_query.id, f"Опрос закончен", show_alert=True)
+            answers_m.pop(a[0])
+            await bot.answer_callback_query(callback_query.id, f"Опрос завершён", show_alert=True)
         else:
             if a[1] in answers_m[a[0]]["answers"]:     # Проверка наличия ответа в опросе(для подстраховки)
                 if callback_query.from_user.id not in answers_m[a[0]]["answered_users"]:    # Отвечал ли уже пользователь?
@@ -145,7 +148,7 @@ async def process_callback_(callback_query: types.CallbackQuery):
                 else:
                     await bot.answer_callback_query(callback_query.id, f"Нехорошо фальсифицировать опросы!", show_alert=True)
     else:
-        await bot.answer_callback_query(callback_query.id, "Опрос закончен или не существует.", show_alert=True)
+        await bot.answer_callback_query(callback_query.id, "Опрос завершён или не существует.", show_alert=True)
 
 
 async def parse_info(data):     # Отправка на гугл таблицы
@@ -174,7 +177,7 @@ async def parse_info(data):     # Отправка на гугл таблицы
         for i in data['user_info']:
             row_res.append([f"Пользователь {i} ответил {data['user_info'][i]}"])
     for i in data["answers"]:
-        row_res.append([f"За вариант {i} - {data['answers'][i]} голос(ов)"])
+        row_res.append([f"За вариант {i} - ", f"{data['answers'][i]}", "голосов"])
     data_send(row_res, data['quiz_name'])
 
 
@@ -262,6 +265,8 @@ async def sztatments(message: types.Message):       # Система контр�
                         "Опрос сохранён, теперь его можно отправить, добавив бота в беседу, выдав права"
                         "администратора, и вызвав этот опрос командой /op код_опроса", reply_markup=types.ReplyKeyboardRemove())
                     await message.answer(f"Ваш код опроса: {i.quiz_id}")
+                    await message.answer("Бота можно добавить в группу нажав на него и выбрав кнопку \"Добавит"
+                                         "ь в группу или канал\"")
                     break
                 else:
                     await message.answer("Только \"Да\" или \"Нет\"")
