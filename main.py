@@ -122,7 +122,7 @@ async def op_start(message):
                         answers_m[f"{z.quiz_id}"]["anonmis"] = z.anonims    # Запись об анонимности голосования
                         t = answers_m[f"{z.quiz_id}"]["clock"]  # Переменная для таймера
                         answers_m[f"{z.quiz_id}"]["user_info"] = {} # Создание списка ответов участников. Используется только в случае не анонимности
-                        await message.answer(f"Опрос {z.quiz_name}\nВопрос: {z.quiz_text}\nАнонимность: {z.anonims}\nТаймер: до {t}\nНачали!", reply_markup=inline_kb)
+                        await message.answer(f"Опрос: {z.quiz_name}\nВопрос: {z.quiz_text}\nАнонимность: {z.anonims}\nТаймер: до {t}\nНачали!", reply_markup=inline_kb)
                 break
 
 
@@ -148,7 +148,7 @@ async def process_callback_(callback_query: types.CallbackQuery):
                 else:
                     await bot.answer_callback_query(callback_query.id, f"Нехорошо фальсифицировать опросы!", show_alert=True)
     else:
-        await bot.answer_callback_query(callback_query.id, "Опрос завершён или не существует.", show_alert=True)
+        await bot.answer_callback_query(callback_query.id, "Опрос завершён или не существует", show_alert=True)
 
 
 async def parse_info(data):     # Отправка на гугл таблицы
@@ -257,6 +257,8 @@ async def sztatments(message: types.Message):       # Система контр�
                         "Опрос сохранён, теперь его можно отправить, добавив бота в беседу, выдав права"
                         "администратора, и вызвав этот опрос командой /op код_опроса", reply_markup=types.ReplyKeyboardRemove())
                     await message.answer(f"Ваш код опроса: {i.quiz_id}")
+                    await message.answer("Бота можно добавить в группу нажав на него и выбрав кнопку \"Добавит"
+                                         "ь в группу или канал\"")
                     break
                 elif message.text == 'Нет':
                     i.anonims = False
