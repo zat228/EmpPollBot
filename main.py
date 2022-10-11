@@ -6,14 +6,14 @@ from datetime import timedelta, datetime
 from aiogram import Bot, Dispatcher, executor, types
 import time
 from quizzer import Quest
-CREDENTIALS_FILE = 'table5online-7972ef6aa6fe.json'  # Имя файла с закрытым ключом, вы должны подставить свое
+CREDENTIALS_FILE = ''  # Имя файла с закрытым ключом, вы должны подставить свое
 
 # Читаем ключи из файла
 credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
 
 httpAuth = credentials.authorize(httplib2.Http()) # Авторизуемся в системе
 service = googleapiclient.discovery.build('sheets', 'v4', http=httpAuth) # Выбираем работу с таблицами и 4 версию API
-spreadsheetId = '17LOQ2eEZwdTUY5aha5wnzJZlgoWpI_CRh5mn_7Tp1MI'
+spreadsheetId = ''  # Код гугл таблицы
 
 
 def data_send(data, name_sheet):
@@ -29,7 +29,7 @@ def data_send(data, name_sheet):
     }).execute()
 
 
-bot = Bot(token="5692121092:AAHNWiaQsDUqSHdJPpDzYbyMnsf7RjmP2U8")
+bot = Bot(token="")     # Бот токен
 dp = Dispatcher(bot)
 logging.basicConfig(level=logging.INFO)
 
@@ -175,7 +175,7 @@ async def parse_info(data):     # Отправка на гугл таблицы
     row_res.append([f"Вопрос опроса: {data['quiz_text']}"])
     if not data['anonmis']:
         for i in data['user_info']:
-            row_res.append([f"Пользователь {i} ответил {data['user_info'][i]}"])
+            row_res.append([f"Пользователь {i} ответил", data['user_info'][i]])
     for i in data["answers"]:
         row_res.append([f"За вариант {i} - ", f"{data['answers'][i]}", "голосов"])
     data_send(row_res, data['quiz_name'])
